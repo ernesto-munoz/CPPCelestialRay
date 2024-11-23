@@ -365,3 +365,4 @@ FodyWeavers.xsd
 # Resources
 [Rr]esource
 resources
+/CPPCelestialRay/imgui.ini
