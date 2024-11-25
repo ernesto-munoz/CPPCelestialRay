@@ -50,7 +50,7 @@ public:
     // Render
     Renderer renderer;
     RenderConfig render_config;
-    std::future<void> render_future;
+    std::future<Renderer::Status> render_future;
     bool is_rendering = false;
     int samples_per_pixel = render_config.GetSamplesPerPixel();
 

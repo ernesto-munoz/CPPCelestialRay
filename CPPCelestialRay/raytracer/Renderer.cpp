@@ -14,7 +14,9 @@ void Renderer::SetScene(std::function<void(HittablesList&)> create)
 }
 
 void Renderer::InitializeRender() {
-	is_rendering = true;
+	status = Status::kProgress;
+	status_detail = StatusDetail::kRendering;
+
 	cam.SetCameraResolution(render_config.resolution);
 	cam.Initialize();
 	render_buffer = std::make_unique<ColorBuffer>(render_config.resolution.width, render_config.resolution.height);
@@ -25,7 +27,19 @@ void Renderer::InitializeRender() {
 
 void Renderer::FinishRender()
 {
-	is_rendering = false;
+	status = Status::kDone;	
+}
+
+void Renderer::CancelRender()
+{
+	if (status != Status::kProgress) return;
+
+	if(threading_config.use_multithread)
+		render_thread_pool->CancelAllCurrentTasks();
+	
+	status = Status::kDone;
+	status_detail == StatusDetail::kCancelled;
+
 }
 
 void Renderer::ConfigureMultithreading(ThreadingConfig config) {
@@ -39,7 +53,7 @@ void Renderer::ConfigureRender(RenderConfig _render_config) {
 	render_config = _render_config;
 }
 
-void Renderer::Render() {
+Renderer::Status Renderer::Render() {
 
 	// Initialize render
 	InitializeRender();
@@ -48,12 +62,13 @@ void Renderer::Render() {
 	std::cout << threading_config << std::endl;
 	std::cout << render_config << std::endl;
 
-	// Launche render in multithread or not
+	// Launch render in multithread or not
 	if (!threading_config.use_multithread) { RenderSingleProcessing(); }
 	else { RenderMultiprocessing(); }
 
 	FinishRender();
 	std::clog << "\rDone.                 \n";
+	return status;
 }
 
 void Renderer::RenderMultiprocessing()
@@ -96,6 +111,7 @@ void Renderer::RenderPatch(unsigned int x, unsigned int y, unsigned int width, u
 
 	for (unsigned int j = y_min; j < y_max; ++j) {
 		for (unsigned int i = x_min; i < x_max; ++i) {
+
 			glm::vec3 final_color(0.0f, 0.0f, 0.0f);
 			std::vector<Ray> rays = GetRays(i, j, samples_num); // get all the rays needed (the first is centered in the pixel)
 
@@ -110,11 +126,12 @@ void Renderer::RenderPatch(unsigned int x, unsigned int y, unsigned int width, u
 
 void Renderer::RenderSingleProcessing() {
 	size_t samples_num = render_config.is_antialiasing_enabled ? render_config.GetSamplesPerPixel() : 1;
-	float samples_num_ratio = render_config.is_antialiasing_enabled ? render_config.GetSamplesPerPixelScale() : 1;
+	double samples_num_ratio = render_config.is_antialiasing_enabled ? render_config.GetSamplesPerPixelScale() : 1;
 
 	for (unsigned int j = 0; j < render_config.resolution.height; ++j) {
 		for (unsigned int i = 0; i < render_config.resolution.width; ++i) {
-			glm::vec3 final_color(0.0f, 0.0f, 0.0f);
+			if (status != Status::kProgress) return;
+			Color final_color(0.0, 0.0, 0.0);
 			std::vector<Ray> rays = GetRays(i, j, samples_num); // get all the rays needed (the first is centered in the pixel)
 
 			for (int i = 0; i < rays.size(); ++i) {
@@ -126,15 +143,15 @@ void Renderer::RenderSingleProcessing() {
 	}
 }
 
-glm::vec3 Renderer::RayColor(const Ray& r, const Hittable& world, size_t depth) {
+Color Renderer::RayColor(const Ray& r, const Hittable& world, size_t depth) {
 	if (depth <= 0) {
-		return glm::vec3(0.0f, 0.0f, 0.0f);
+		return Color(0.0, 0.0, 0.0);
 	}
 
 	HitRecord rec;
 	if (world.Hit(r, Interval(0.0001, INFINITY), rec)) {
 		Ray scattered;
-		glm::vec3 attenuation;
+		Color attenuation;
 		if (rec.material->Scatter(r, rec, attenuation, scattered)) {
 			return attenuation * RayColor(scattered, world, depth - 1);
 		}
@@ -144,18 +161,18 @@ glm::vec3 Renderer::RayColor(const Ray& r, const Hittable& world, size_t depth) 
 
 	// calculate background color
 	glm::vec3 unit_direction = glm::normalize(r.direction);
-	float a = 0.5f * (unit_direction.y + 1.0f);
-	return (1.0f - a) * glm::vec3(1.0f, 1.0f, 1.0f) + a * glm::vec3(0.5f, 0.7f, 1.0f);
+	double a = 0.5f * (unit_direction.y + 1.0f);
+	return (1.0f - a) * Color(1.0, 1.0, 1.0) + a * Color(0.5, 0.7, 1.0);
 }
 
 void Renderer::SaveRenderBuffer(const std::string outputImagePath) const {
 	render_buffer->Save(outputImagePath);
 }
 
-void Renderer::SetColor(unsigned int x, unsigned int y, glm::vec3 color) {
+void Renderer::SetColor(unsigned int x, unsigned int y, Color color) {
 	// write the color in the render buffer (should i use a lock here?)
 
-	auto linear_to_gamma = [](float x) {
+	auto linear_to_gamma = [](double x) {
 		if (x > 0) return std::sqrtf(x);
 		return 0.0f;
 	};

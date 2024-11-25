@@ -24,7 +24,7 @@ public:
 
         std::future<return_type> res = task->get_future();
         {
-            std::unique_lock<std::mutex> lock(queue_mutex);
+            std::unique_lock<std::mutex> lock(tasks_queue_mutex);
 
             // don't allow enqueueing after stopping the pool
             if (stop)
@@ -40,10 +40,12 @@ public:
 
     const size_t GetCurrentTasks() const;
 
+    void CancelAllCurrentTasks();
+
 private:
     std::vector<std::thread> workers;
     std::queue<std::function<void()>> tasks;
-    std::mutex queue_mutex;
+    std::mutex tasks_queue_mutex;
     std::condition_variable condition;
     bool stop;
 };

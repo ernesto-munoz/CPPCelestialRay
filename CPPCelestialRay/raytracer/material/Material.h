@@ -8,13 +8,14 @@
 #include "../../utils/RandomUtils.h"
 #include "../material/Texture.h"
 
-using Color = glm::vec3;
+
+using Color = glm::dvec3;
 
 class Material
 {
 public:
 	virtual ~Material() = default;
-	virtual bool Scatter(const Ray& ray_in, const HitRecord& rec, glm::vec3& attenuation, Ray& scattered) const = 0;
+	virtual bool Scatter(const Ray& ray_in, const HitRecord& rec, Color& attenuation, Ray& scattered) const = 0;
 
 protected:
 	inline bool NearZero(const glm::vec3& v) const {
@@ -41,7 +42,7 @@ public:
 	
 	Lambert(const Color& albedo) : texture(std::make_shared<SolidColor>(albedo)) {}
 	Lambert(std::shared_ptr<Texture> texture) : texture(texture) {}
-	bool Scatter(const Ray& ray_in, const HitRecord& rec, glm::vec3& attenuation, Ray& scattered) const override;
+	bool Scatter(const Ray& ray_in, const HitRecord& rec, Color& attenuation, Ray& scattered) const override;
 
 };
 
@@ -51,7 +52,7 @@ public:
 	float fuzz;
 
 	Metal(const glm::vec3& albedo, float fuzz) : albedo(albedo), fuzz(fuzz < 1 ? fuzz : 1) {}
-	bool Scatter(const Ray& ray_in, const HitRecord& rec, glm::vec3& attenuation, Ray& scattered) const override;
+	bool Scatter(const Ray& ray_in, const HitRecord& rec, Color& attenuation, Ray& scattered) const override;
 
 };
 
@@ -62,7 +63,7 @@ public:
 
 	Dielectric(float ior) : albedo(glm::vec3(1.0f, 1.0f, 1.0f)), ior(ior) {}
 	Dielectric(const glm::vec3& albedo, float ior) : albedo(albedo), ior(ior){}
-	bool Scatter(const Ray& ray_in, const HitRecord& rec, glm::vec3& attenuation, Ray& scattered) const override;
+	bool Scatter(const Ray& ray_in, const HitRecord& rec, Color& attenuation, Ray& scattered) const override;
 
 private:
 	inline double Reflectance(double cosine, double refraction_index) const {

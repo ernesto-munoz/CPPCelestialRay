@@ -18,7 +18,7 @@
 #include "../utils/ScopeTimer.h"
 #include "hittable/Quad.h"
 
-using Color = glm::vec3;
+using Color = glm::dvec3;
 
 struct ThreadingConfig {
 	bool use_multithread = true;
@@ -68,6 +68,19 @@ class Renderer
 {
 public:
 
+	enum Status {
+		kDone,
+		kProgress,
+		
+	};
+
+	enum StatusDetail {
+		kFinished,
+		kRendering,
+		kPaused,
+		kCancelled,
+	};
+
 	// Multithreading
 	ThreadingConfig threading_config;
 	unsigned int current_render_total_tasks;
@@ -79,39 +92,35 @@ public:
     Camera cam;
 
 	// Rendering
-	bool is_rendering = false;
+	//bool is_rendering = false;
+	Status status;
+	StatusDetail status_detail;
 	std::unique_ptr<ColorBuffer> render_buffer = nullptr;
-	const glm::vec3 min_allowed_pixel_color = glm::vec3(0.0f, 0.0f, 0.0f);
-	const glm::vec3 max_allowed_pixel_color = glm::vec3(1.0f, 1.0f, 1.0f);
+	const Color min_allowed_pixel_color = Color(0.0, 0.0, 0.0);
+	const Color max_allowed_pixel_color = Color(1.0, 1.0, 1.0);
 
 	// Configuration
 	RenderConfig render_config;
-
-	// Example Scenes
-	//void BasicScene();
-	//void MultipleSphereScene(const int width = 10);
-	//void CheckeredSpheres();
-	//void Earth();
-	//void Quads();
 
 	Renderer();
 	void SetScene(std::function<void(HittablesList&)> create);
 	void InitializeRender();
 	void FinishRender();
+	void CancelRender();
 	void ConfigureMultithreading(ThreadingConfig config);
 	void ConfigureRender(RenderConfig _render_config);
-	void Render();
+	Status Render();
 	void RenderMultiprocessing();
 	void RenderPatch(unsigned int x, unsigned int y, unsigned int width, unsigned int height);
 	void RenderSingleProcessing();
-	glm::vec3 RayColor(const Ray& r, const Hittable& world, size_t depth);
+	Color RayColor(const Ray& r, const Hittable& world, size_t depth);
 	void SaveRenderBuffer(const std::string outputImagePath) const;
 	
 
 private:
 	std::unique_ptr<ThreadPool> render_thread_pool;
 
-	void SetColor(unsigned int x, unsigned int y, glm::vec3 color);
+	void SetColor(unsigned int x, unsigned int y, Color color);
 	Ray GetRay(unsigned int x, unsigned int y, bool center_ray = false) const;
 	std::vector<Ray> GetRays(unsigned int x, unsigned int y, size_t rays_num) const;
 	glm::vec3 HemisphericalRand(const glm::vec3& normal);

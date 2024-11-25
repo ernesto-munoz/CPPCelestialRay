@@ -4,7 +4,7 @@
 #include <glm/vec3.hpp>
 #include "../ColorBuffer.h"
 
-using Color = glm::vec3;
+using Color = glm::dvec3;
 
 class Texture
 {

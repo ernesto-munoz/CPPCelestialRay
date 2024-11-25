@@ -53,7 +53,7 @@ void Loader::ProcessMesh(aiMesh* mesh, const aiScene* scene, std::vector<std::sh
         /*const glm::vec3 edge1 = normal_v1 - normal_v0;
         const glm::vec3 edge1 = normal_v2 - normal_v0;*/
         //glm::vec3 face_normal = glm::normalize(glm::cross((normal_v1 - normal_v0), (normal_v2 - normal_v0)));
-        glm::vec3 face_normal = (normal_v0 + normal_v1 + normal_v2) / 3.0f;
+        glm::vec3 face_normal = glm::normalize(normal_v0);
 
         aiFace face = mesh->mFaces[i];
         Face out_face(

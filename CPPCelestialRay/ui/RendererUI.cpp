@@ -24,15 +24,21 @@ void RendererUI::NewFrame() {
 
     // 2. Show a simple window that we create ourselves. We use a Begin/End pair to create a named window.
     {
+        // Manager input
+
+        if (ImGui::IsKeyDown(ImGuiKey_Escape) && renderer.status == Renderer::Status::kProgress) {
+            renderer.CancelRender();
+        }
+
 
         ImGui::Begin("Configuration");                          // Create a window called "Hello, world!" and append into it.
         ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io->Framerate, io->Framerate);
         ImGui::Text("Last render time % .3f ms", render_duration_ms);
 
         render_progress = static_cast<float>(renderer.current_render_completed_tasks) / renderer.current_render_total_tasks;
-        ImGui::ProgressBar(render_progress, ImVec2(-1.0f, 0.0f), renderer.is_rendering ? nullptr : "Completed");
+        ImGui::ProgressBar(render_progress, ImVec2(-1.0f, 0.0f), renderer.status == Renderer::Status::kProgress ? nullptr : "Completed");
 
-        if (renderer.is_rendering) ImGui::BeginDisabled();
+        if (renderer.status == Renderer::Status::kProgress) ImGui::BeginDisabled();
         
         if (ImGui::Button("Render")) {
             render_config.resolution = all_resolutions[selected_resolution_index];
@@ -47,11 +53,11 @@ void RendererUI::NewFrame() {
 
             render_start = std::chrono::high_resolution_clock::now();
             previous_render_preview_time = std::chrono::high_resolution_clock::now();
-            auto launch_async_render = [this]() -> void {this->renderer.Render(); };
+            auto launch_async_render = [this]() -> Renderer::Status { return this->renderer.Render(); };
             render_future = std::async(std::launch::async, launch_async_render);
         }
         
-        if (renderer.is_rendering) ImGui::EndDisabled();
+        if (renderer.status == Renderer::Status::kProgress) ImGui::EndDisabled();
         
         if (ImGui::CollapsingHeader("Scene", ImGuiTreeNodeFlags_None)) {
             if (ImGui::Button("Set")) {           
@@ -108,7 +114,8 @@ void RendererUI::NewFrame() {
         if (ImGui::Button("Save")) {
             renderer.SaveRenderBuffer("final_render.png");
         }
-        if (renderer.is_rendering) {
+
+        if (renderer.status == Renderer::Status::kProgress || renderer.status_detail == Renderer::StatusDetail::kCancelled) {
             if (std::chrono::high_resolution_clock::now() - previous_render_preview_time  > render_preview_duration_ms) {
                 previous_render_preview_time = std::chrono::high_resolution_clock::now();
 
@@ -118,16 +125,26 @@ void RendererUI::NewFrame() {
             };
         }
 
-        if (render_future.valid() && render_future.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
-            render_end = std::chrono::high_resolution_clock::now();
-            render_duration = render_end - render_start;
-            render_duration_ms = render_duration.count() * 1000.0f;
+        if (render_future.valid()) {
+            if (render_future.wait_for(std::chrono::milliseconds(10)) == std::future_status::ready) {
+                // get the time to make the render
+                render_end = std::chrono::high_resolution_clock::now();
+                render_duration = render_end - render_start;
+                render_duration_ms = render_duration.count() * 1000.0f;
 
-            DeleteRenderTexture(render_texture_id);
-            render_texture_id = CreateRenderTexture(renderer.render_buffer->raw_data, renderer.cam.image_width, renderer.cam.image_height);
+                // delete the texture and create again with the current render state
+                DeleteRenderTexture(render_texture_id);
+                render_texture_id = CreateRenderTexture(renderer.render_buffer->raw_data, renderer.cam.image_width, renderer.cam.image_height);
 
-            render_future.get(); // this will invalidate the future
+                try {
+                    render_future.get(); // This will get the result of the async function
+                }
+                catch (const std::exception& e) {
+                    std::cerr << "Exception: " << e.what() << std::endl; // the promise is broken here if the render is cancelled, i don't know why
+                }
+            }
         }
+        
 
         if (render_texture_id != NULL) {
             ImGui::GetBackgroundDrawList()->AddImage(

@@ -1,6 +1,6 @@
 #include "Material.h"
 
-bool Lambert::Scatter(const Ray& ray_in, const HitRecord& rec, glm::vec3& attenuation, Ray& scattered) const
+bool Lambert::Scatter(const Ray& ray_in, const HitRecord& rec, Color& attenuation, Ray& scattered) const
 {
 	auto scatter_direction = rec.normal + glm::sphericalRand(1.0f);
 
@@ -10,10 +10,11 @@ bool Lambert::Scatter(const Ray& ray_in, const HitRecord& rec, glm::vec3& attenu
 
 	scattered = Ray(rec.point, glm::normalize(scatter_direction));
 	attenuation = texture->GetColor(rec.u, rec.v, rec.point);
+
 	return true;
 }
 
-bool Metal::Scatter(const Ray& ray_in, const HitRecord& rec, glm::vec3& attenuation, Ray& scattered) const
+bool Metal::Scatter(const Ray& ray_in, const HitRecord& rec, Color& attenuation, Ray& scattered) const
 {
 	// get the reflection of the incident ray (normalized) and add a little fuzz
 	glm::vec3 reflected = Reflect(ray_in.direction, rec.normal) + (glm::sphericalRand(1.0f) * fuzz);
@@ -22,10 +23,10 @@ bool Metal::Scatter(const Ray& ray_in, const HitRecord& rec, glm::vec3& attenuat
 	return glm::dot(scattered.direction, rec.normal) > 0;
 }
 
-bool Dielectric::Scatter(const Ray& ray_in, const HitRecord& rec, glm::vec3& attenuation, Ray& scattered) const
+bool Dielectric::Scatter(const Ray& ray_in, const HitRecord& rec, Color& attenuation, Ray& scattered) const
 {
 	attenuation = albedo;
-	float ri = rec.frontFace ? (1.0f / ior) : ior;
+	float ri = rec.front_face ? (1.0f / ior) : ior;
 	glm::vec3 unit_direction = glm::normalize(ray_in.direction);
 
 	float cos_theta = std::fmin(glm::dot(-unit_direction, rec.normal), 1.0);

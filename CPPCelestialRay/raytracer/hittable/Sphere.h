@@ -27,5 +27,5 @@ private:
     std::shared_ptr<Material> material;
     AABB bbox;
 
-    static void GetUV(const glm::vec3 point, float& u, float& v);
+    static void GetUV(const glm::vec3 point, double& u, double& v);
 };

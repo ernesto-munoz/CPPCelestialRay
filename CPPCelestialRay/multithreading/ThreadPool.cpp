@@ -6,7 +6,7 @@ ThreadPool::ThreadPool(size_t numThreads) : stop(false) {
             while (true) {
                 std::function<void()> task;
                 {
-                    std::unique_lock<std::mutex> lock(this->queue_mutex);
+                    std::unique_lock<std::mutex> lock(this->tasks_queue_mutex);
                     this->condition.wait(lock, [this] { return this->stop || !this->tasks.empty(); });
                     if (this->stop && this->tasks.empty()) {
                         return;
@@ -16,13 +16,13 @@ ThreadPool::ThreadPool(size_t numThreads) : stop(false) {
                 }
                 task();
             }
-            });
+        });
     }
 }
 
 ThreadPool::~ThreadPool() {
     {
-        std::unique_lock<std::mutex> lock(queue_mutex);
+        std::unique_lock<std::mutex> lock(tasks_queue_mutex);
         stop = true;
     }
     condition.notify_all();
@@ -32,13 +32,18 @@ ThreadPool::~ThreadPool() {
 }
 
 
-
 const size_t ThreadPool::GetCurrentWorkers() const {
     return workers.size();
 }
 
 const size_t ThreadPool::GetCurrentTasks() const {
     return tasks.size();
+}
+
+void ThreadPool::CancelAllCurrentTasks()
+{
+    std::unique_lock<std::mutex> lock(tasks_queue_mutex);
+    for (; !tasks.empty(); tasks.pop()) {}
 }
 
 

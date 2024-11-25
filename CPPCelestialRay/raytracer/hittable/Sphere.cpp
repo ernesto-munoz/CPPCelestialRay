@@ -31,12 +31,13 @@ bool Sphere::Hit(const Ray& r, Interval ray_t, HitRecord& rec) const {
     return true;
 }
 
-void Sphere::GetUV(const glm::vec3 point, float& u, float& v)
+void Sphere::GetUV(const glm::vec3 point, double& u, double& v)
 {
+    constexpr double pi = glm::pi<double>();
     auto theta = std::acos(-point.y);
-    auto phi = std::atan2(-point.z, -point.x) + glm::pi<float>();
-    u = phi / (2 * glm::pi<float>());
-    v = theta / glm::pi<float>();
+    auto phi = std::atan2(-point.z, -point.x) + pi;
+    u = phi / (2 * pi);
+    v = theta / pi;
 }
 
 

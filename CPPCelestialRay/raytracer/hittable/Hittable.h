@@ -10,18 +10,18 @@ class Material;
 struct HitRecord {
 	glm::vec3 point;
 	glm::vec3 normal;
-	float u;
-	float v;
+	double u;
+	double v;
 	double t;
-	bool frontFace;
+	bool front_face;
 	std::shared_ptr<Material> material;
 
-	void SetFaceNormal(const Ray& r, const glm::vec3& outNormal) {
+	void SetFaceNormal(const Ray& r, const glm::vec3& out_normal) {
 		// Sets the hit record normal vector.
-		// NOTE: the parameter `outNormal` is assumed to have unit length.
+		// NOTE: the parameter `out_normal` is assumed to have unit length.
 
-		frontFace = glm::dot(r.direction, outNormal) < 0;
-		normal = frontFace ? outNormal : -outNormal;
+		front_face = glm::dot(r.direction, out_normal) < 0;
+		normal = front_face ? out_normal : -out_normal;
 	}
 };
 

@@ -9,14 +9,14 @@ const std::map<TestScenes::kTestScenes, TestSceneInfo> TestScenes::kTestScenesLi
 	{kTestScenes_Earth4K, TestSceneInfo("Earth 4K", Camera(glm::vec3(0, 0, 12), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0), 20, 0.0, 10.0), Earth4K)},
 	{kTestScenes_Quads, TestSceneInfo("Quads", Camera(glm::vec3(0, 0, 9), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0), 80, 0, 10), Quads)},
 	{kTestScenes_CornellBox, TestSceneInfo("Cornell Box", Camera(glm::vec3(278, 278, -800), glm::vec3(278, 278, 0), glm::vec3(0, 1, 0), 40, 0, 10), CornellBox)},
-	{kTestScenes_AssimpCubeLoader, TestSceneInfo("Assimp Cube Loader", Camera(glm::vec3(5, 0, 5), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0), 20, 0, 10), AssimpCubeLoader)}
+	{kTestScenes_AssimpCubeLoader, TestSceneInfo("Assimp Cube Loader", Camera(glm::vec3(0, 2, 5), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0), 20, 0, 10), AssimpCubeLoader)}
 };
 
 void MultipleSphereScene(HittablesList& world)
 {
 	world.Clear();
 	auto checker = std::make_shared<CheckerTexture>(0.32, Color(0.2f, 0.3f, 0.1f), Color(0.9f, 0.9f, 0.9f));
-	auto ground_material = std::make_shared<Lambert>(checker);
+	auto ground_material = std::make_shared<Lambert>(Color(0.0f, 0.5f, 1.0f));
 	world.Add(make_shared<Sphere>(glm::vec3(0, -1000, 0), 1000, ground_material));
 	const int width = 20;
 	for (int a = -width; a < width; a++) {
@@ -212,7 +212,7 @@ void AssimpCubeLoader(HittablesList& world)
 	world.Add(make_shared<Sphere>(glm::vec3(1.0, 0, 1.0), 0.1, blue));
 	world.Add(make_shared<Sphere>(glm::vec3(-1.0, 0, 1.0), 0.1, material_center));
 
-	auto meshes = Loader::Load("../resources/monkey_h.glb");
+	auto meshes = Loader::Load("../resources/monkey.glb");
 	
 	for (auto mesh : meshes) {
 		mesh->SetMaterial(material_center);
