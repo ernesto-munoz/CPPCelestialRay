@@ -1,11 +1,11 @@
 #include "Texture.h"
 
-Color SolidColor::GetColor(float u, float v, const glm::vec3& point) const
+Color SolidColor::GetColor(double u, double v, const glm::vec3& point) const
 {
     return albedo;
 }
 
-Color CheckerTexture::GetColor(float u, float v, const glm::vec3& point) const
+Color CheckerTexture::GetColor(double u, double v, const glm::vec3& point) const
 {
     int x = static_cast<int>(std::floor(inv_scale * point.x));
     int y = static_cast<int>(std::floor(inv_scale * point.y));
@@ -15,14 +15,14 @@ Color CheckerTexture::GetColor(float u, float v, const glm::vec3& point) const
     return is_even ? even->GetColor(u, v, point) : odd->GetColor(u, v, point);
 }
 
-Color ImageTexture::GetColor(float u, float v, const glm::vec3& point) const
+Color ImageTexture::GetColor(double u, double v, const glm::vec3& point) const
 {
     // return magenta as guide for an error
     if (color_buffer.raw_data == nullptr) { 
-        return Color(1.0f, 0.0f, 1.0f);
+        return Color(1.0, 0.0, 1.0);
     }
-    u = 1 - std::clamp(u, 0.0f, 1.0f);
-    v = 1 - std::clamp(v, 0.0f, 1.0f); // flip v to image coordinates
+    u = 1 - std::clamp(u, 0.0, 1.0);
+    v = 1 - std::clamp(v, 0.0, 1.0); // flip v to image coordinates
     int i = static_cast<int>(u * color_buffer.width);
     int j = static_cast<int>(v * color_buffer.height);
     float color_scale = 1.0f / 255.0f;

@@ -59,19 +59,25 @@ bool Mesh::Hit(const Ray& r, Interval ray_t, HitRecord& rec) const
     rec.t = nearest_t;
     rec.point = r.at(nearest_t);
     rec.material = material;
-    // calculate normal
-    /*faces[i].
-    glm::vec3 v0_normal = normals[faces[i].indices[0]];*/
-
     rec.SetFaceNormal(r, nearest_normal);
-    //rec.normal = faces[i].normal;
-    //rec.normal = glm::vec3(0.0f, -1.0f, 0.0f);
-
 
     return true;    
 }
 
 AABB Mesh::BBox() const
 {
-    return AABB();
+    return bbox;
+}
+
+void Mesh::CalculateBBox()
+{
+    glm::vec3 min = glm::vec3(std::numeric_limits<float>::max());
+    glm::vec3 max = glm::vec3(std::numeric_limits<float>::min());
+    for (size_t i = 0; i < vertices.size(); ++i) {
+        const glm::vec3& current_vertice = vertices[i];
+        min = glm::min(current_vertice, min);
+        max = glm::max(current_vertice, max);
+    }
+
+    bbox = AABB(min, max);
 }

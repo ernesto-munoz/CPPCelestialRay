@@ -47,9 +47,9 @@ void RendererUI::NewFrame() {
             renderer.ConfigureRender(render_config);
             renderer.ConfigureMultithreading(threading_config);
 
-            renderer.cam.center = glm::vec3(camera_position[0], camera_position[1], camera_position[2]);
-            renderer.cam.lookat = glm::vec3(camera_lookat[0], camera_lookat[1], camera_lookat[2]);
-            renderer.cam.vup = glm::vec3(camera_vup[0], camera_vup[1], camera_vup[2]);
+            custom_camera.center = glm::vec3(camera_position[0], camera_position[1], camera_position[2]);
+            custom_camera.lookat = glm::vec3(camera_lookat[0], camera_lookat[1], camera_lookat[2]);
+            custom_camera.vup = glm::vec3(camera_vup[0], camera_vup[1], camera_vup[2]);
 
             render_start = std::chrono::high_resolution_clock::now();
             previous_render_preview_time = std::chrono::high_resolution_clock::now();
@@ -59,7 +59,11 @@ void RendererUI::NewFrame() {
         
         if (renderer.status == Renderer::Status::kProgress) ImGui::EndDisabled();
         
-        if (ImGui::CollapsingHeader("Scene", ImGuiTreeNodeFlags_None)) {
+        if (ImGui::Button("Load")) { }
+        ImGui::SameLine();
+        ImGui::InputText("Scene file", resources_scene_filepath, MAX_PATH);
+
+        if (ImGui::CollapsingHeader("Preset Scenes", ImGuiTreeNodeFlags_None)) {
             if (ImGui::Button("Set")) {           
                 SetCurrentScene();
             }
@@ -69,12 +73,13 @@ void RendererUI::NewFrame() {
 
         // Camera configuration
         if (ImGui::CollapsingHeader("Camera", ImGuiTreeNodeFlags_None)) {
+            ImGui::Checkbox("Antialiasing", &use_custom_camera);
             ImGui::InputFloat3("Position", camera_position);
             ImGui::InputFloat3("Look At", camera_lookat);
             ImGui::InputFloat3("Up", camera_vup);
-            ImGui::InputFloat("VFov", &renderer.cam.vfov);
-            ImGui::InputFloat("Depth of field", &renderer.cam.defocus_angle);
-            ImGui::InputFloat("Focus distance", &renderer.cam.focus_distance);
+            ImGui::InputFloat("VFov", &custom_camera.vfov);
+            ImGui::InputFloat("Depth of field", &custom_camera.defocus_angle);
+            ImGui::InputFloat("Focus distance", &custom_camera.focus_distance);
         }        
 
         // Resolution Combo Box
@@ -120,7 +125,7 @@ void RendererUI::NewFrame() {
                 previous_render_preview_time = std::chrono::high_resolution_clock::now();
 
                 DeleteRenderTexture(render_texture_id);
-                render_texture_id = CreateRenderTexture(renderer.render_buffer->raw_data, renderer.cam.image_width, renderer.cam.image_height);
+                render_texture_id = CreateRenderTexture(renderer.render_buffer->raw_data, renderer.render_config.resolution.width, renderer.render_config.resolution.height);
 
             };
         }
@@ -134,7 +139,7 @@ void RendererUI::NewFrame() {
 
                 // delete the texture and create again with the current render state
                 DeleteRenderTexture(render_texture_id);
-                render_texture_id = CreateRenderTexture(renderer.render_buffer->raw_data, renderer.cam.image_width, renderer.cam.image_height);
+                render_texture_id = CreateRenderTexture(renderer.render_buffer->raw_data, renderer.render_config.resolution.width, renderer.render_config.resolution.height);
 
                 try {
                     render_future.get(); // This will get the result of the async function
@@ -150,7 +155,7 @@ void RendererUI::NewFrame() {
             ImGui::GetBackgroundDrawList()->AddImage(
                 (ImTextureID)(uintptr_t)render_texture_id,
                 ImVec2(0, 0),
-                ImVec2(static_cast<float>(renderer.cam.image_width), static_cast<float>(renderer.cam.image_height)));
+                ImVec2(static_cast<float>(renderer.render_config.resolution.width), static_cast<float>(renderer.render_config.resolution.height)));
         }
         ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
         ImGui::End();
@@ -178,16 +183,6 @@ void RendererUI::DeleteRenderTexture(GLuint& texture_id)
 
 void RendererUI::SetCurrentScene()
 {
-    // move test scene cmaera value to the values in the ui
-    Camera cam = TestScenes::kTestScenesList.at(all_test_scene[selected_test_scene]).cam;
-    std::copy(glm::value_ptr(cam.center), glm::value_ptr(cam.center) + 3, camera_position);
-    std::copy(glm::value_ptr(cam.lookat), glm::value_ptr(cam.lookat) + 3, camera_lookat);
-    std::copy(glm::value_ptr(cam.vup), glm::value_ptr(cam.vup) + 3, camera_vup);
-    renderer.cam.vfov = cam.vfov;
-    renderer.cam.defocus_angle = cam.defocus_angle;
-    renderer.cam.focus_distance = cam.focus_distance;
-
-    // create the world of the renderer
     renderer.SetScene(TestScenes::kTestScenesList.at(all_test_scene[selected_test_scene]).create);
 }
 

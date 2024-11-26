@@ -10,7 +10,7 @@ class Texture
 {
 public:
 	virtual ~Texture() = default;
-	virtual Color GetColor(float u, float v, const glm::vec3& point) const = 0;
+	virtual Color GetColor(double u, double v, const glm::vec3& point) const = 0;
 };
 
 
@@ -23,7 +23,7 @@ public:
 
 
 	// Inherited via Texture
-	Color GetColor(float u, float v, const glm::vec3& point) const override;
+	Color GetColor(double u, double v, const glm::vec3& point) const override;
 
 };
 
@@ -40,7 +40,7 @@ public:
 		inv_scale(1 / scale), even(std::make_shared<SolidColor>(c1)), odd(std::make_shared<SolidColor>(c2)) {}
 
 	// Inherited via Texture
-	Color GetColor(float u, float v, const glm::vec3& point) const override;
+	Color GetColor(double u, double v, const glm::vec3& point) const override;
 
 };
 
@@ -51,6 +51,6 @@ public:
 	ImageTexture(std::string filename) : color_buffer(filename) {}
 	
 	// Inherited via Texture
-	Color GetColor(float u, float v, const glm::vec3& point) const override;
+	Color GetColor(double u, double v, const glm::vec3& point) const override;
 
 };

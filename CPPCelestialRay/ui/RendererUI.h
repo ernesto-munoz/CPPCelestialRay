@@ -15,6 +15,7 @@
 #include "../raytracer/Resolution.h"
 #include "../raytracer/TestScenes.h"
 
+#define MAX_PATH 256
 
 class RendererUI
 {
@@ -43,6 +44,8 @@ public:
     std::chrono::milliseconds render_preview_duration_ms{ 500 };
 
     // Camera
+    bool use_custom_camera = false;
+    Camera custom_camera;
     float camera_position[3] = { 0.0f, 0.0f, 9.0f };
     float camera_lookat[3] = { 0.0f, 0.0f, 0.0f };
     float camera_vup[3] = { 0.0f, 1.0f, 0.0f };
@@ -62,7 +65,10 @@ public:
     // Test Scenes
     const std::vector < TestScenes::kTestScenes> all_test_scene = TestScenes::GetAllTestScenes();
     std::vector<const char*> all_test_scenes_nice_name;
-    int selected_test_scene = 7;
+    int selected_test_scene = 0;
+
+    // Resources loader
+    char resources_scene_filepath[MAX_PATH];
 
     RendererUI() = default;
 	void Initialize();

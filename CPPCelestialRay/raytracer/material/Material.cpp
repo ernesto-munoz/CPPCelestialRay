@@ -43,3 +43,8 @@ bool Dielectric::Scatter(const Ray& ray_in, const HitRecord& rec, Color& attenua
 	scattered = Ray(rec.point, direction);
 	return true;
 }
+
+Color DiffuseLight::Emitted(double u, double v, const glm::vec3& point) const
+{
+	return texture->GetColor(u, v, point);
+}

@@ -4,12 +4,14 @@ Renderer::Renderer() {
 	render_thread_pool = std::make_unique<ThreadPool>(threading_config.num_threads);
 }
 
-void Renderer::SetScene(std::function<void(HittablesList&)> create)
+void Renderer::SetScene(std::function<const Scene()> create)
 {
 	if (create) {
-		create(world);
-		if (render_config.is_acceleration_structure_enabled)
-			world = HittablesList(std::make_shared<BVHNode>(world));
+		scene = create();
+		if (render_config.is_acceleration_structure_enabled) {
+			scene.Accelerate();
+			//scene.world = HittablesList(std::make_shared<BVHNode>(scene.world));
+		}
 	}
 }
 
@@ -17,10 +19,9 @@ void Renderer::InitializeRender() {
 	status = Status::kProgress;
 	status_detail = StatusDetail::kRendering;
 
-	cam.SetCameraResolution(render_config.resolution);
-	cam.Initialize();
 	render_buffer = std::make_unique<ColorBuffer>(render_config.resolution.width, render_config.resolution.height);
-
+	scene.PrepareForRender(render_config.resolution);
+	
 	current_render_total_tasks = 0;
 	current_render_completed_tasks = 0;
 }
@@ -38,7 +39,7 @@ void Renderer::CancelRender()
 		render_thread_pool->CancelAllCurrentTasks();
 	
 	status = Status::kDone;
-	status_detail == StatusDetail::kCancelled;
+	status_detail = StatusDetail::kCancelled;
 
 }
 
@@ -116,7 +117,7 @@ void Renderer::RenderPatch(unsigned int x, unsigned int y, unsigned int width, u
 			std::vector<Ray> rays = GetRays(i, j, samples_num); // get all the rays needed (the first is centered in the pixel)
 
 			for (int i = 0; i < rays.size(); ++i) {
-				final_color += RayColor(rays.at(i), world, render_config.max_depth);
+				final_color += RayColor(rays.at(i), scene.world, render_config.max_depth);
 			}
 
 			SetColor(i, j, final_color * samples_num_ratio);
@@ -135,7 +136,7 @@ void Renderer::RenderSingleProcessing() {
 			std::vector<Ray> rays = GetRays(i, j, samples_num); // get all the rays needed (the first is centered in the pixel)
 
 			for (int i = 0; i < rays.size(); ++i) {
-				final_color += RayColor(rays.at(i), world, render_config.max_depth);
+				final_color += RayColor(rays.at(i), scene.world, render_config.max_depth);
 			}
 
 			SetColor(i, j, final_color * samples_num_ratio);
@@ -149,20 +150,26 @@ Color Renderer::RayColor(const Ray& r, const Hittable& world, size_t depth) {
 	}
 
 	HitRecord rec;
-	if (world.Hit(r, Interval(0.0001, INFINITY), rec)) {
-		Ray scattered;
-		Color attenuation;
-		if (rec.material->Scatter(r, rec, attenuation, scattered)) {
-			return attenuation * RayColor(scattered, world, depth - 1);
-		}
+	if (!world.Hit(r, Interval(0.0001, INFINITY), rec)) {
+		return render_config.background_color;
+	}
+	
+	Ray scattered;
+	Color attenuation;
+	Color color_from_emission = rec.material->Emitted(rec.u, rec.v, rec.point);
 
-		return glm::vec3(0.0f, 0.0f, 0.0f);
+	if (!rec.material->Scatter(r, rec, attenuation, scattered)) {
+		return color_from_emission;
 	}
 
-	// calculate background color
-	glm::vec3 unit_direction = glm::normalize(r.direction);
-	double a = 0.5f * (unit_direction.y + 1.0f);
-	return (1.0f - a) * Color(1.0, 1.0, 1.0) + a * Color(0.5, 0.7, 1.0);
+	Color color_from_scatter = attenuation * RayColor(scattered, world, depth - 1);
+
+	return color_from_emission + color_from_scatter;
+
+	//// calculate background color
+	//glm::vec3 unit_direction = glm::normalize(r.direction);
+	//double a = 0.5f * (unit_direction.y + 1.0f);
+	//return (1.0f - a) * Color(1.0, 1.0, 1.0) + a * Color(0.5, 0.7, 1.0);
 }
 
 void Renderer::SaveRenderBuffer(const std::string outputImagePath) const {
@@ -173,8 +180,8 @@ void Renderer::SetColor(unsigned int x, unsigned int y, Color color) {
 	// write the color in the render buffer (should i use a lock here?)
 
 	auto linear_to_gamma = [](double x) {
-		if (x > 0) return std::sqrtf(x);
-		return 0.0f;
+		if (x > 0) return std::sqrt(x);
+		return 0.0;
 	};
 
 	color.r = linear_to_gamma(color.r);
@@ -197,6 +204,7 @@ Ray Renderer::GetRay(unsigned int x, unsigned int y, bool center_ray) const {
 		offset.y = rand01() - 0.5f;
 	}
 
+	const Camera& cam = scene.GetCurrentCamera();
 	auto pixel_sample = cam.pixel00_loc + ((static_cast<float>(x) + offset.x) * cam.pixel_delta_u) + ((static_cast<float>(y) + offset.y) * cam.pixel_delta_v);
 	auto random_unit_disk = glm::diskRand(1.0f);
 	/*std::cout << random_unit_disk.x << " " << random_unit_disk.y << std::endl;*/

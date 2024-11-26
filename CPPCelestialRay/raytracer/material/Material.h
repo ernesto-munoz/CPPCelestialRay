@@ -16,6 +16,7 @@ class Material
 public:
 	virtual ~Material() = default;
 	virtual bool Scatter(const Ray& ray_in, const HitRecord& rec, Color& attenuation, Ray& scattered) const = 0;
+	virtual Color Emitted(double u, double v, const glm::vec3& point) const { return Color(0, 0, 0); }
 
 protected:
 	inline bool NearZero(const glm::vec3& v) const {
@@ -71,6 +72,14 @@ private:
 		r0 = r0 * r0;
 		return r0 + (1 - r0) * std::pow((1 - cosine), 5);
 	}
-
 };
 
+class DiffuseLight : public Material {
+public:
+	std::shared_ptr<Texture> texture;
+
+	DiffuseLight(const Color& albedo) : texture(std::make_shared<SolidColor>(albedo)) {}
+	DiffuseLight(std::shared_ptr<Texture> texture) : texture(texture) {}
+
+	Color Emitted(double u, double v, const glm::vec3& point) const override;
+};

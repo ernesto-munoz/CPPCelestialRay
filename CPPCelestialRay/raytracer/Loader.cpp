@@ -50,10 +50,7 @@ void Loader::ProcessMesh(aiMesh* mesh, const aiScene* scene, std::vector<std::sh
         const glm::vec3& normal_v0 = output_mesh->normals[v0_index];
         const glm::vec3& normal_v1 = output_mesh->normals[v1_index];
         const glm::vec3& normal_v2 = output_mesh->normals[v2_index];
-        /*const glm::vec3 edge1 = normal_v1 - normal_v0;
-        const glm::vec3 edge1 = normal_v2 - normal_v0;*/
-        //glm::vec3 face_normal = glm::normalize(glm::cross((normal_v1 - normal_v0), (normal_v2 - normal_v0)));
-        glm::vec3 face_normal = glm::normalize(normal_v0);
+        glm::vec3 face_normal = glm::normalize(normal_v2 + normal_v1 + normal_v0);
 
         aiFace face = mesh->mFaces[i];
         Face out_face(
@@ -63,7 +60,10 @@ void Loader::ProcessMesh(aiMesh* mesh, const aiScene* scene, std::vector<std::sh
         output_mesh->faces.emplace_back(out_face);
     }
 
+    output_mesh->CalculateBBox();
     meshes.emplace_back(output_mesh);
+
+    std::cout << "Mesh: " << output_mesh->vertices.size() << " vertices, " << output_mesh->faces.size() << " faces." << std::endl;
 }
 
 std::vector<std::shared_ptr<Mesh>> Loader::Load(std::string filename)

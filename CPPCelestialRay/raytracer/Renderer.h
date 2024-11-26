@@ -17,6 +17,7 @@
 #include "material/Texture.h" 
 #include "../utils/ScopeTimer.h"
 #include "hittable/Quad.h"
+#include "Scene.h"
 
 using Color = glm::dvec3;
 
@@ -37,7 +38,8 @@ public:
 	Resolution resolution = Resolution(Resolution::kResolution_1280x720);
 	size_t max_depth = 20;
 	bool is_antialiasing_enabled = true;
-	bool is_acceleration_structure_enabled = false;
+	bool is_acceleration_structure_enabled = true;
+	Color background_color = Color(0.7, 0.8, 1.0);
 
 	void SetSamplesPerPixel(unsigned int spp) {
 		samples_per_pixel = spp;
@@ -88,8 +90,9 @@ public:
 	unsigned int current_render_completed_tasks;
 
 	// Scene
-    HittablesList world;
-    Camera cam;
+    /*HittablesList world;
+    Camera cam;*/
+	Scene scene;
 
 	// Rendering
 	//bool is_rendering = false;
@@ -103,7 +106,7 @@ public:
 	RenderConfig render_config;
 
 	Renderer();
-	void SetScene(std::function<void(HittablesList&)> create);
+	void SetScene(std::function<const Scene()> create);
 	void InitializeRender();
 	void FinishRender();
 	void CancelRender();

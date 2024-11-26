@@ -23,9 +23,11 @@ public:
 	// Inherited via Hittable
 	bool Hit(const Ray& r, Interval ray_t, HitRecord& rec) const override;
 	AABB BBox() const override;
+	void CalculateBBox();
 
 
 private:
 	std::shared_ptr<Material> material;
+	AABB bbox;
 };
 

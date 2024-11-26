@@ -2,22 +2,25 @@
 
 
 const std::map<TestScenes::kTestScenes, TestSceneInfo> TestScenes::kTestScenesList = {
-	{kTestScenes_MultipleSpheres, TestSceneInfo("Multiple Spheres", Camera(glm::vec3(13, 2, 3), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0), 20, 0.6, 10.0), MultipleSphereScene)},
-	{kTestScenes_BasicScene, TestSceneInfo("Basic Scene", Camera(glm::vec3(-2, 2, 1), glm::vec3(0, 0, -1), glm::vec3(0, 1, 0), 90, 10.0, 3.4), BasicScene)},
+	{kTestScenes_MultipleSpheres, TestSceneInfo("Multiple Spheres", MultipleSphereScene)},
+	/*{kTestScenes_BasicScene, TestSceneInfo("Basic Scene", Camera(glm::vec3(-2, 2, 1), glm::vec3(0, 0, -1), glm::vec3(0, 1, 0), 90, 10.0, 3.4), BasicScene)},
 	{kTestScenes_CheckeredSpheres, TestSceneInfo("Chechered Spheres", Camera(glm::vec3(13, 2, 3), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0), 20, 0.0, 10.0), CheckeredSpheres)},
 	{kTestScenes_Earth, TestSceneInfo("Earth", Camera(glm::vec3(0, 0, 12), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0), 20, 0.0, 10.0), Earth)},
 	{kTestScenes_Earth4K, TestSceneInfo("Earth 4K", Camera(glm::vec3(0, 0, 12), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0), 20, 0.0, 10.0), Earth4K)},
 	{kTestScenes_Quads, TestSceneInfo("Quads", Camera(glm::vec3(0, 0, 9), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0), 80, 0, 10), Quads)},
 	{kTestScenes_CornellBox, TestSceneInfo("Cornell Box", Camera(glm::vec3(278, 278, -800), glm::vec3(278, 278, 0), glm::vec3(0, 1, 0), 40, 0, 10), CornellBox)},
-	{kTestScenes_AssimpCubeLoader, TestSceneInfo("Assimp Cube Loader", Camera(glm::vec3(0, 2, 5), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0), 20, 0, 10), AssimpCubeLoader)}
+	{kTestScenes_AssimpCubeLoader, TestSceneInfo("Assimp Cube Loader", Camera(glm::vec3(0, 2, 5), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0), 20, 0, 10), AssimpCubeLoader)},
+	{ kTestScenes_SimpleLight, TestSceneInfo("Simple Light", Camera(glm::vec3(26, 3, 6), glm::vec3(0, 2, 0), glm::vec3(0, 1, 0), 20, 0, 10), SimpleLight) }*/
 };
 
-void MultipleSphereScene(HittablesList& world)
+const Scene MultipleSphereScene()
 {
-	world.Clear();
+	Scene scene;
+	scene.AddCamera(Camera(glm::vec3(13, 2, 3), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0), 20, 0.6, 10.0));
+
 	auto checker = std::make_shared<CheckerTexture>(0.32, Color(0.2f, 0.3f, 0.1f), Color(0.9f, 0.9f, 0.9f));
 	auto ground_material = std::make_shared<Lambert>(Color(0.0f, 0.5f, 1.0f));
-	world.Add(make_shared<Sphere>(glm::vec3(0, -1000, 0), 1000, ground_material));
+	scene.world.Add(make_shared<Sphere>(glm::vec3(0, -1000, 0), 1000, ground_material));
 	const int width = 20;
 	for (int a = -width; a < width; a++) {
 		for (int b = -width; b < width; b++) {
@@ -31,35 +34,36 @@ void MultipleSphereScene(HittablesList& world)
 					// diffuse
 					auto albedo = glm::vec3(rand01(), rand01(), rand01());
 					sphere_material = std::make_shared<Lambert>(albedo);
-					world.Add(std::make_shared<Sphere>(center, 0.2, sphere_material));
+					scene.world.Add(std::make_shared<Sphere>(center, 0.2, sphere_material));
 				}
 				else if (choose_mat < 0.95) {
 					// metal
 					auto albedo = glm::vec3(rand01(), rand01(), rand01());
 					auto fuzz = rand(0.0f, 0.5f);
 					sphere_material = std::make_shared<Metal>(albedo, fuzz);
-					world.Add(std::make_shared<Sphere>(center, 0.2, sphere_material));
+					scene.world.Add(std::make_shared<Sphere>(center, 0.2, sphere_material));
 				}
 				else {
 					// glass
 					sphere_material = std::make_shared<Dielectric>(1.5);
-					world.Add(std::make_shared<Sphere>(center, 0.2, sphere_material));
+					scene.world.Add(std::make_shared<Sphere>(center, 0.2, sphere_material));
 				}
 			}
 		}
 	}
 
 	auto material1 = std::make_shared<Dielectric>(1.5);
-	world.Add(std::make_shared<Sphere>(glm::vec3(0, 1, 0), 1.0, material1));
+	scene.world.Add(std::make_shared<Sphere>(glm::vec3(0, 1, 0), 1.0, material1));
 
 	auto material2 = std::make_shared<Lambert>(glm::vec3(0.4, 0.2, 0.1));
-	world.Add(std::make_shared<Sphere>(glm::vec3(-4, 1, 0), 1.0, material2));
+	scene.world.Add(std::make_shared<Sphere>(glm::vec3(-4, 1, 0), 1.0, material2));
 
 	auto material3 = std::make_shared<Metal>(glm::vec3(0.7, 0.6, 0.5), 0.0);
-	world.Add(std::make_shared<Sphere>(glm::vec3(4, 1, 0), 1.0, material3));
+	scene.world.Add(std::make_shared<Sphere>(glm::vec3(4, 1, 0), 1.0, material3));
 
+	return scene;
 }
-
+/*
 void BasicScene(HittablesList& world)
 {
 	world.Clear();
@@ -148,12 +152,12 @@ void CornellBox(HittablesList& world)
 	world.Add(std::make_shared<Quad>(glm::vec3(555, 555, 555), glm::vec3(-555, 0, 0), glm::vec3(0, 0, -555), white));
 	world.Add(std::make_shared<Quad>(glm::vec3(0, 0, 555), glm::vec3(555, 0, 0), glm::vec3(0, 555, 0), white));
 
-	/*world.Add(box(glm::vec3(130, 0, 65), glm::vec3(295, 165, 230), white));
-	world.Add(box(glm::vec3(265, 0, 295), glm::vec3(430, 330, 460), white));*/
+	world.Add(box(glm::vec3(130, 0, 65), glm::vec3(295, 165, 230), white));
+	world.Add(box(glm::vec3(265, 0, 295), glm::vec3(430, 330, 460), white));
 
-	std::shared_ptr<Hittable> box1 = box(glm::vec3(0, 0, 0), glm::vec3(165, 330, 165), white);
-	//box1 = std::make_shared<Translate>(box1, glm::vec3(265, 0, 295));
-	world.Add(box1);
+	//std::shared_ptr<Hittable> box1 = box(glm::vec3(0, 0, 0), glm::vec3(165, 330, 165), white);
+	////box1 = std::make_shared<Translate>(box1, glm::vec3(265, 0, 295));
+	//world.Add(box1);
 
 	
 
@@ -207,12 +211,12 @@ void AssimpCubeLoader(HittablesList& world)
 	world.Add(make_shared<Sphere>(glm::vec3(1.0, 0.0, 1.0), 0.1, material_center));
 	world.Add(make_shared<Sphere>(glm::vec3(-0.5, 0.0, 0.5), 0.1, red));*/
 
-	world.Add(make_shared<Sphere>(glm::vec3(-1.0, 0, -1.0), 0.1, red));
+	/*world.Add(make_shared<Sphere>(glm::vec3(-1.0, 0, -1.0), 0.1, red));
 	world.Add(make_shared<Sphere>(glm::vec3(1.0, 0.0, -1.0), 0.1, green));
 	world.Add(make_shared<Sphere>(glm::vec3(1.0, 0, 1.0), 0.1, blue));
 	world.Add(make_shared<Sphere>(glm::vec3(-1.0, 0, 1.0), 0.1, material_center));
 
-	auto meshes = Loader::Load("../resources/monkey.glb");
+	auto meshes = Loader::Load("../resources/sphere_scatter.gltf");
 	
 	for (auto mesh : meshes) {
 		mesh->SetMaterial(material_center);
@@ -220,3 +224,14 @@ void AssimpCubeLoader(HittablesList& world)
 	}
 	
 }
+
+void SimpleLight(HittablesList& world)
+{
+	world.Clear();*/
+	/*auto pertext = std::make_shared<>(4);
+	world.add(make_shared<sphere>(point3(0, -1000, 0), 1000, make_shared<lambertian>(pertext)));
+	world.add(make_shared<sphere>(point3(0, 2, 0), 2, make_shared<lambertian>(pertext)));
+
+	auto difflight = make_shared<diffuse_light>(color(4, 4, 4));
+	world.add(make_shared<quad>(point3(3, 1, -2), vec3(2, 0, 0), vec3(0, 2, 0), difflight));*/
+//}
