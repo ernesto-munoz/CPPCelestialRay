@@ -28,7 +28,8 @@ void Renderer::InitializeRender() {
 
 void Renderer::FinishRender()
 {
-	status = Status::kDone;	
+	status = Status::kDone;
+	status_detail = StatusDetail::kFinished;
 }
 
 void Renderer::CancelRender()
