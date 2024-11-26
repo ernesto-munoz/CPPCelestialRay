@@ -36,7 +36,8 @@ void RendererUI::NewFrame() {
         ImGui::Text("Last render time % .3f ms", render_duration_ms);
 
         render_progress = static_cast<float>(renderer.current_render_completed_tasks) / renderer.current_render_total_tasks;
-        ImGui::ProgressBar(render_progress, ImVec2(-1.0f, 0.0f), renderer.status == Renderer::Status::kProgress ? nullptr : "Completed");
+        const char* status_overlay = renderer.status == Renderer::Status::kProgress ? nullptr : renderer.status_detail == Renderer::StatusDetail::kFinished ? "Completed" : "Cancelled (Wait to finish)";
+        ImGui::ProgressBar(render_progress, ImVec2(-1.0f, 0.0f), status_overlay);
 
         if (renderer.status == Renderer::Status::kProgress) ImGui::BeginDisabled();
         
