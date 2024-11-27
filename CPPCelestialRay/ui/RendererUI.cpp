@@ -15,7 +15,7 @@ void RendererUI::Initialize() {
 
 void RendererUI::NewFrame() {
     ImGui::NewFrame();
-
+    
 
     // RENDER APP CONSTRUCTION AND PRESENTATION STARTS HERE
     // 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
@@ -56,6 +56,7 @@ void RendererUI::NewFrame() {
                 renderer.SetOverrideCamera(custom_camera);
             } else {
                 renderer.RemoveOverrideCamera();
+                renderer.scene.SetCurrentCamera(selected_camera_index);
             }
 
             render_start = std::chrono::high_resolution_clock::now();
@@ -66,10 +67,17 @@ void RendererUI::NewFrame() {
         
         if (renderer.status == Renderer::Status::kProgress) ImGui::EndDisabled();
         
+        // Load an external file as a new scene
         if (ImGui::Button("Load")) { }
         ImGui::SameLine();
         ImGui::InputText("Scene file", resources_scene_filepath, MAX_PATH);
 
+        // Select the cameras availables
+        size_t num_cameras = renderer.scene.GetNumCameras();
+        ImGui::InputInt(std::format("Camera({})", num_cameras).c_str(), &selected_camera_index);
+        selected_camera_index = std::clamp(selected_camera_index, 0, static_cast<int>(num_cameras) - 1);
+
+        // Load alreqady stablished scenes
         if (ImGui::CollapsingHeader("Preset Scenes", ImGuiTreeNodeFlags_None)) {
             if (ImGui::Button("Set")) {           
                 SetCurrentScene();

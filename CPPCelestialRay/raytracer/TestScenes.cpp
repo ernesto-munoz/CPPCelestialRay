@@ -17,6 +17,8 @@ const Scene MultipleSphereScene()
 {
 	Scene scene;
 	scene.AddCamera(Camera(glm::vec3(13, 2, 3), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0), 20, 0.6, 10.0));
+	scene.AddCamera(Camera(glm::vec3(-13, 2, 3), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0), 20, 0.6, 10.0));
+	scene.SetCurrentCamera(0);
 
 	auto checker = std::make_shared<CheckerTexture>(0.32, Color(0.2f, 0.3f, 0.1f), Color(0.9f, 0.9f, 0.9f));
 	auto ground_material = std::make_shared<Lambert>(Color(0.0f, 0.5f, 1.0f));

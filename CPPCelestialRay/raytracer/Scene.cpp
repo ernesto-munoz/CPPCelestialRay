@@ -13,6 +13,11 @@ void Scene::AddCamera(const Camera& camera)
 	cameras.emplace_back(camera);
 }
 
+const size_t Scene::GetNumCameras() const
+{
+	return cameras.size();
+}
+
 const Camera& Scene::GetCurrentCamera() const
 {
 	return override_camera.value_or(cameras[current_camera_index]);
@@ -20,7 +25,8 @@ const Camera& Scene::GetCurrentCamera() const
 
 void Scene::SetCurrentCamera(unsigned int index)
 {
-	current_camera_index = index;
+	if(index < cameras.size())
+		current_camera_index = index;
 }
 
 void Scene::SetOverrideCamera(const Camera& camera)
@@ -45,4 +51,8 @@ void Scene::PrepareForRender(Resolution res)
 
 	
 
+}
+
+void Scene::FillFromFilePath(const std::string& file_path)
+{
 }

@@ -1,5 +1,6 @@
 #pragma once
 #include <iostream>
+#include <format>
 #include <chrono>
 
 #include "imgui.h"
@@ -44,6 +45,7 @@ public:
     std::chrono::milliseconds render_preview_duration_ms{ 500 };
 
     // Camera
+    int selected_camera_index = 0;
     bool use_custom_camera = false;
     Camera custom_camera;
     float camera_position[3] = { 0.0f, 0.0f, 9.0f };
