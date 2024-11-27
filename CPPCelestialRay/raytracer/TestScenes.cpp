@@ -3,14 +3,14 @@
 
 const std::map<TestScenes::kTestScenes, TestSceneInfo> TestScenes::kTestScenesList = {
 	{kTestScenes_MultipleSpheres, TestSceneInfo("Multiple Spheres", MultipleSphereScene)},
-	/*{kTestScenes_BasicScene, TestSceneInfo("Basic Scene", Camera(glm::vec3(-2, 2, 1), glm::vec3(0, 0, -1), glm::vec3(0, 1, 0), 90, 10.0, 3.4), BasicScene)},
-	{kTestScenes_CheckeredSpheres, TestSceneInfo("Chechered Spheres", Camera(glm::vec3(13, 2, 3), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0), 20, 0.0, 10.0), CheckeredSpheres)},
-	{kTestScenes_Earth, TestSceneInfo("Earth", Camera(glm::vec3(0, 0, 12), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0), 20, 0.0, 10.0), Earth)},
-	{kTestScenes_Earth4K, TestSceneInfo("Earth 4K", Camera(glm::vec3(0, 0, 12), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0), 20, 0.0, 10.0), Earth4K)},
-	{kTestScenes_Quads, TestSceneInfo("Quads", Camera(glm::vec3(0, 0, 9), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0), 80, 0, 10), Quads)},
-	{kTestScenes_CornellBox, TestSceneInfo("Cornell Box", Camera(glm::vec3(278, 278, -800), glm::vec3(278, 278, 0), glm::vec3(0, 1, 0), 40, 0, 10), CornellBox)},
-	{kTestScenes_AssimpCubeLoader, TestSceneInfo("Assimp Cube Loader", Camera(glm::vec3(0, 2, 5), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0), 20, 0, 10), AssimpCubeLoader)},
-	{ kTestScenes_SimpleLight, TestSceneInfo("Simple Light", Camera(glm::vec3(26, 3, 6), glm::vec3(0, 2, 0), glm::vec3(0, 1, 0), 20, 0, 10), SimpleLight) }*/
+	{kTestScenes_BasicScene, TestSceneInfo("Basic Scene", BasicScene)},
+	{kTestScenes_CheckeredSpheres, TestSceneInfo("Chechered Spheres", CheckeredSpheres)},
+	{kTestScenes_Earth, TestSceneInfo("Earth", Earth)},
+	{kTestScenes_Earth4K, TestSceneInfo("Earth 4K", Earth4K)},
+	{kTestScenes_Quads, TestSceneInfo("Quads", Quads)},
+	{kTestScenes_CornellBox, TestSceneInfo("Cornell Box", CornellBox)},
+	{kTestScenes_AssimpCubeLoader, TestSceneInfo("Assimp Cube Loader", AssimpCubeLoader)},
+	{ kTestScenes_SimpleLight, TestSceneInfo("Simple Light", SimpleLight) }
 };
 
 const Scene MultipleSphereScene()
@@ -63,10 +63,11 @@ const Scene MultipleSphereScene()
 
 	return scene;
 }
-/*
-void BasicScene(HittablesList& world)
+
+const Scene BasicScene()
 {
-	world.Clear();
+	Scene scene;
+	scene.AddCamera(Camera(glm::vec3(-2, 2, 1), glm::vec3(0, 0, -1), glm::vec3(0, 1, 0), 90, 10.0, 3.4));
 
 	auto material_ground = std::make_shared<Lambert>(glm::vec3(0.8, 0.8, 0.0));
 	auto material_center = std::make_shared<Lambert>(glm::vec3(0.1, 0.2, 0.5));
@@ -74,27 +75,31 @@ void BasicScene(HittablesList& world)
 	auto material_left = std::make_shared<Dielectric>(glm::vec3(1.0, 1.0, 1.0), 1.50);
 	auto material_bubble = std::make_shared<Dielectric>(glm::vec3(1.0, 1.0, 1.0), 1.00 / 1.50);
 
-	world.Add(make_shared<Sphere>(glm::vec3(0.0, -100.5, -1.0), 100.0, material_ground));
-	world.Add(make_shared<Sphere>(glm::vec3(0.0, 0.0, -1.2), 0.5, material_center));
-	world.Add(make_shared<Sphere>(glm::vec3(-1.0, 0.0, -1.0), 0.5, material_left));
-	world.Add(make_shared<Sphere>(glm::vec3(-1.0, 0.0, -1.0), 0.4, material_bubble));
-	world.Add(make_shared<Sphere>(glm::vec3(1.0, 0.0, -1.0), 0.5, material_right));
+	scene.world.Add(make_shared<Sphere>(glm::vec3(0.0, -100.5, -1.0), 100.0, material_ground));
+	scene.world.Add(make_shared<Sphere>(glm::vec3(0.0, 0.0, -1.2), 0.5, material_center));
+	scene.world.Add(make_shared<Sphere>(glm::vec3(-1.0, 0.0, -1.0), 0.5, material_left));
+	scene.world.Add(make_shared<Sphere>(glm::vec3(-1.0, 0.0, -1.0), 0.4, material_bubble));
+	scene.world.Add(make_shared<Sphere>(glm::vec3(1.0, 0.0, -1.0), 0.5, material_right));
 
+	return scene;
 }
 
-void CheckeredSpheres(HittablesList& world)
+const Scene CheckeredSpheres()
 {
-	world.Clear();
+	Scene scene;
+	scene.AddCamera(Camera(glm::vec3(13, 2, 3), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0), 20, 0.0, 10.0));
 	auto checker = std::make_shared<CheckerTexture>(0.32, Color(.2, .3, .1), Color(.9, .9, .9));
 
-	world.Add(std::make_shared<Sphere>(glm::vec3(0, -10, 0), 10, std::make_shared<Lambert>(checker)));
-	world.Add(std::make_shared<Sphere>(glm::vec3(0, 10, 0), 10, std::make_shared<Lambert>(checker)));
+	scene.world.Add(std::make_shared<Sphere>(glm::vec3(0, -10, 0), 10, std::make_shared<Lambert>(checker)));
+	scene.world.Add(std::make_shared<Sphere>(glm::vec3(0, 10, 0), 10, std::make_shared<Lambert>(checker)));
 
+	return scene;
 }
 
-void Earth(HittablesList& world)
+const Scene Earth()
 {
-	world.Clear();
+	Scene scene;
+	scene.AddCamera(Camera(glm::vec3(0, 0, 12), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0), 20, 0.0, 10.0));
 	std::shared_ptr<ImageTexture> earth_texture;
 	{
 		ScopeTimer t("Earth texture time took ");
@@ -102,12 +107,15 @@ void Earth(HittablesList& world)
 	}
 	auto earth_surface = std::make_shared<Lambert>(earth_texture);
 	auto globe = std::make_shared<Sphere>(glm::vec3(0, 0, 0), 2, earth_surface);
-	world.Add(globe);
+	scene.world.Add(globe);
+
+	return scene;
 }
 
-void Earth4K(HittablesList& world)
+const Scene Earth4K()
 {
-	world.Clear();
+	Scene scene;
+	scene.AddCamera(Camera(glm::vec3(0, 0, 12), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0), 20, 0.0, 10.0));
 	std::shared_ptr<ImageTexture> earth_texture;
 	{
 		ScopeTimer t("Earth texture time took ");
@@ -115,12 +123,16 @@ void Earth4K(HittablesList& world)
 	}
 	auto earth_surface = std::make_shared<Lambert>(earth_texture);
 	auto globe = std::make_shared<Sphere>(glm::vec3(0, 0, 0), 2, earth_surface);
-	world.Add(globe);
+	scene.world.Add(globe);
+
+	return scene;
 }
 
-void Quads(HittablesList& world)
+const Scene Quads()
 {
-	world.Clear();
+	Scene scene;
+	scene.AddCamera(Camera(glm::vec3(0, 0, 9), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0), 80, 0, 10));
+
 	// Materials
 	auto left_red = std::make_shared<Lambert>(Color(1.0, 0.2, 0.2));
 	auto back_green = std::make_shared<Lambert>(Color(0.2, 1.0, 0.2));
@@ -129,39 +141,35 @@ void Quads(HittablesList& world)
 	auto lower_teal = std::make_shared<Lambert>(Color(0.2, 0.8, 0.8));
 
 	// Quads
-	world.Add(std::make_shared<Quad>(glm::vec3(-3, -2, 5), glm::vec3(0, 0, -4), glm::vec3(0, 4, 0), left_red));
-	world.Add(std::make_shared<Quad>(glm::vec3(-2, -2, 0), glm::vec3(4, 0, 0), glm::vec3(0, 4, 0), back_green));
-	world.Add(std::make_shared<Quad>(glm::vec3(3, -2, 1), glm::vec3(0, 0, 4), glm::vec3(0, 4, 0), right_blue));
-	world.Add(std::make_shared<Quad>(glm::vec3(-2, 3, 1), glm::vec3(4, 0, 0), glm::vec3(0, 0, 4), upper_orange));
-	world.Add(std::make_shared<Quad>(glm::vec3(-2, -3, 5), glm::vec3(4, 0, 0), glm::vec3(0, 0, -4), lower_teal));
+	scene.world.Add(std::make_shared<Quad>(glm::vec3(-3, -2, 5), glm::vec3(0, 0, -4), glm::vec3(0, 4, 0), left_red));
+	scene.world.Add(std::make_shared<Quad>(glm::vec3(-2, -2, 0), glm::vec3(4, 0, 0), glm::vec3(0, 4, 0), back_green));
+	scene.world.Add(std::make_shared<Quad>(glm::vec3(3, -2, 1), glm::vec3(0, 0, 4), glm::vec3(0, 4, 0), right_blue));
+	scene.world.Add(std::make_shared<Quad>(glm::vec3(-2, 3, 1), glm::vec3(4, 0, 0), glm::vec3(0, 0, 4), upper_orange));
+	scene.world.Add(std::make_shared<Quad>(glm::vec3(-2, -3, 5), glm::vec3(4, 0, 0), glm::vec3(0, 0, -4), lower_teal));
 
+	return scene;
 }
 
-void CornellBox(HittablesList& world)
+const Scene CornellBox()
 {
-	world.Clear();
+	Scene scene;
+	scene.AddCamera(Camera(glm::vec3(278, 278, -800), glm::vec3(278, 278, 0), glm::vec3(0, 1, 0), 40, 0, 10));
 	// Materials
 	auto red = std::make_shared<Lambert>(Color(1.0, 0.2, 0.2));
 	auto green = std::make_shared<Lambert>(Color(0.2, 1.0, 0.2));
 	auto white = std::make_shared<Lambert>(Color(1.0, 1.0, 1.0));
 
-	world.Add(std::make_shared<Quad>(glm::vec3(555, 0, 0), glm::vec3(0, 555, 0), glm::vec3(0, 0, 555), green));
-	world.Add(std::make_shared<Quad>(glm::vec3(0, 0, 0), glm::vec3(0, 555, 0), glm::vec3(0, 0, 555), red));
-	world.Add(std::make_shared<Quad>(glm::vec3(343, 554, 332), glm::vec3(-130, 0, 0), glm::vec3(0, 0, -105), white));
-	world.Add(std::make_shared<Quad>(glm::vec3(0, 0, 0), glm::vec3(555, 0, 0), glm::vec3(0, 0, 555), white));
-	world.Add(std::make_shared<Quad>(glm::vec3(555, 555, 555), glm::vec3(-555, 0, 0), glm::vec3(0, 0, -555), white));
-	world.Add(std::make_shared<Quad>(glm::vec3(0, 0, 555), glm::vec3(555, 0, 0), glm::vec3(0, 555, 0), white));
+	scene.world.Add(std::make_shared<Quad>(glm::vec3(555, 0, 0), glm::vec3(0, 555, 0), glm::vec3(0, 0, 555), green));
+	scene.world.Add(std::make_shared<Quad>(glm::vec3(0, 0, 0), glm::vec3(0, 555, 0), glm::vec3(0, 0, 555), red));
+	scene.world.Add(std::make_shared<Quad>(glm::vec3(343, 554, 332), glm::vec3(-130, 0, 0), glm::vec3(0, 0, -105), white));
+	scene.world.Add(std::make_shared<Quad>(glm::vec3(0, 0, 0), glm::vec3(555, 0, 0), glm::vec3(0, 0, 555), white));
+	scene.world.Add(std::make_shared<Quad>(glm::vec3(555, 555, 555), glm::vec3(-555, 0, 0), glm::vec3(0, 0, -555), white));
+	scene.world.Add(std::make_shared<Quad>(glm::vec3(0, 0, 555), glm::vec3(555, 0, 0), glm::vec3(0, 555, 0), white));
 
-	world.Add(box(glm::vec3(130, 0, 65), glm::vec3(295, 165, 230), white));
-	world.Add(box(glm::vec3(265, 0, 295), glm::vec3(430, 330, 460), white));
+	scene.world.Add(box(glm::vec3(130, 0, 65), glm::vec3(295, 165, 230), white));
+	scene.world.Add(box(glm::vec3(265, 0, 295), glm::vec3(430, 330, 460), white));
 
-	//std::shared_ptr<Hittable> box1 = box(glm::vec3(0, 0, 0), glm::vec3(165, 330, 165), white);
-	////box1 = std::make_shared<Translate>(box1, glm::vec3(265, 0, 295));
-	//world.Add(box1);
-
-	
-
-	//Transform a(box1);
+	return scene;
 }
 
 inline std::shared_ptr<Hittable> box(const glm::vec3& a, const glm::vec3& b, std::shared_ptr<Material> mat)
@@ -188,9 +196,11 @@ inline std::shared_ptr<Hittable> box(const glm::vec3& a, const glm::vec3& b, std
 	return sides;
 }
 
-void AssimpCubeLoader(HittablesList& world)
+const Scene AssimpCubeLoader()
 {
-	world.Clear();
+	Scene scene;
+	scene.AddCamera(Camera(glm::vec3(0, 2, 5), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0), 20, 0, 10));
+	
 	// Materials
 	auto material_ground = std::make_shared<Lambert>(glm::vec3(0.8, 0.8, 0.0));
 	auto material_center = std::make_shared<Lambert>(glm::vec3(0.1, 0.2, 0.5));
@@ -202,36 +212,41 @@ void AssimpCubeLoader(HittablesList& world)
 	auto material_bubble = std::make_shared<Dielectric>(glm::vec3(1.0, 1.0, 1.0), 1.00 / 1.50);
 
 	//world.Add(make_shared<Sphere>(glm::vec3(0.0, -100.5, -1.0), 100.0, material_ground));
-	/*world.Add(make_shared<Sphere>(glm::vec3(0.0, 0.0, -1.2), 0.5, material_center));
-	world.Add(make_shared<Sphere>(glm::vec3(-1.0, 0.0, -1.0), 0.5, material_left));
-	world.Add(make_shared<Sphere>(glm::vec3(-1.0, 0.0, -1.0), 0.4, material_bubble));
-	world.Add(make_shared<Sphere>(glm::vec3(1.0, 0.0, -1.0), 0.5, material_right));*/
+	scene.world.Add(make_shared<Sphere>(glm::vec3(0.0, 0.0, -1.2), 0.5, material_center));
+	scene.world.Add(make_shared<Sphere>(glm::vec3(-1.0, 0.0, -1.0), 0.5, material_left));
+	scene.world.Add(make_shared<Sphere>(glm::vec3(-1.0, 0.0, -1.0), 0.4, material_bubble));
+	scene.world.Add(make_shared<Sphere>(glm::vec3(1.0, 0.0, -1.0), 0.5, material_right));
 
-	/*world.Add(make_shared<Sphere>(glm::vec3(-1.0, 0, -1.0), 0.1, material_center));
-	world.Add(make_shared<Sphere>(glm::vec3(1.0, 0.0, 1.0), 0.1, material_center));
-	world.Add(make_shared<Sphere>(glm::vec3(-0.5, 0.0, 0.5), 0.1, red));*/
+	scene.world.Add(make_shared<Sphere>(glm::vec3(-1.0, 0, -1.0), 0.1, material_center));
+	scene.world.Add(make_shared<Sphere>(glm::vec3(1.0, 0.0, 1.0), 0.1, material_center));
+	scene.world.Add(make_shared<Sphere>(glm::vec3(-0.5, 0.0, 0.5), 0.1, red));
 
-	/*world.Add(make_shared<Sphere>(glm::vec3(-1.0, 0, -1.0), 0.1, red));
-	world.Add(make_shared<Sphere>(glm::vec3(1.0, 0.0, -1.0), 0.1, green));
-	world.Add(make_shared<Sphere>(glm::vec3(1.0, 0, 1.0), 0.1, blue));
-	world.Add(make_shared<Sphere>(glm::vec3(-1.0, 0, 1.0), 0.1, material_center));
+	scene.world.Add(make_shared<Sphere>(glm::vec3(-1.0, 0, -1.0), 0.1, red));
+	scene.world.Add(make_shared<Sphere>(glm::vec3(1.0, 0.0, -1.0), 0.1, green));
+	scene.world.Add(make_shared<Sphere>(glm::vec3(1.0, 0, 1.0), 0.1, blue));
+	scene.world.Add(make_shared<Sphere>(glm::vec3(-1.0, 0, 1.0), 0.1, material_center));
 
 	auto meshes = Loader::Load("../resources/sphere_scatter.gltf");
 	
 	for (auto mesh : meshes) {
 		mesh->SetMaterial(material_center);
-		world.Add(mesh);
+		scene.world.Add(mesh);
 	}
 	
+	return scene;
 }
 
-void SimpleLight(HittablesList& world)
-{
-	world.Clear();*/
-	/*auto pertext = std::make_shared<>(4);
-	world.add(make_shared<sphere>(point3(0, -1000, 0), 1000, make_shared<lambertian>(pertext)));
-	world.add(make_shared<sphere>(point3(0, 2, 0), 2, make_shared<lambertian>(pertext)));
 
-	auto difflight = make_shared<diffuse_light>(color(4, 4, 4));
-	world.add(make_shared<quad>(point3(3, 1, -2), vec3(2, 0, 0), vec3(0, 2, 0), difflight));*/
-//}
+const Scene SimpleLight()
+{
+	Scene scene;
+	scene.AddCamera(Camera(glm::vec3(26, 3, 6), glm::vec3(0, 2, 0), glm::vec3(0, 1, 0), 20, 0, 10));
+
+	//auto pertext = std::make_shared<>(4);
+	//world.add(make_shared<sphere>(point3(0, -1000, 0), 1000, make_shared<lambertian>(pertext)));
+	//world.add(make_shared<sphere>(point3(0, 2, 0), 2, make_shared<lambertian>(pertext)));
+
+	//auto difflight = make_shared<diffuse_light>(color(4, 4, 4));
+	//world.add(make_shared<quad>(point3(3, 1, -2), vec3(2, 0, 0), vec3(0, 2, 0), difflight));
+	return scene;
+}

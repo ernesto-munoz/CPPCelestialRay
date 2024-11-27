@@ -177,15 +177,21 @@ Color Renderer::RayColor(const Ray& r, const Hittable& world, size_t depth) {
 	Color color_from_scatter = attenuation * RayColor(scattered, world, depth - 1);
 
 	return color_from_emission + color_from_scatter;
-
-	//// calculate background color
-	//glm::vec3 unit_direction = glm::normalize(r.direction);
-	//double a = 0.5f * (unit_direction.y + 1.0f);
-	//return (1.0f - a) * Color(1.0, 1.0, 1.0) + a * Color(0.5, 0.7, 1.0);
 }
 
-void Renderer::SaveRenderBuffer(const std::string outputImagePath) const {
+void Renderer::SaveRenderBuffer(const std::string outputImagePath) const 
+{
 	render_buffer->Save(outputImagePath);
+}
+
+void Renderer::SetOverrideCamera(const Camera& camera) 
+{
+	scene.SetOverrideCamera(camera);
+}
+
+void Renderer::RemoveOverrideCamera()
+{
+	scene.RemoveOverrideCamera();
 }
 
 void Renderer::SetColor(unsigned int x, unsigned int y, Color color) {

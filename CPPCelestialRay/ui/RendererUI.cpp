@@ -52,6 +52,12 @@ void RendererUI::NewFrame() {
             custom_camera.lookat = glm::vec3(camera_lookat[0], camera_lookat[1], camera_lookat[2]);
             custom_camera.vup = glm::vec3(camera_vup[0], camera_vup[1], camera_vup[2]);
 
+            if (use_custom_camera) {
+                renderer.SetOverrideCamera(custom_camera);
+            } else {
+                renderer.RemoveOverrideCamera();
+            }
+
             render_start = std::chrono::high_resolution_clock::now();
             previous_render_preview_time = std::chrono::high_resolution_clock::now();
             auto launch_async_render = [this]() -> Renderer::Status { return this->renderer.Render(); };
@@ -74,7 +80,7 @@ void RendererUI::NewFrame() {
 
         // Camera configuration
         if (ImGui::CollapsingHeader("Camera", ImGuiTreeNodeFlags_None)) {
-            ImGui::Checkbox("Antialiasing", &use_custom_camera);
+            ImGui::Checkbox("Use Custom Camera", &use_custom_camera);
             ImGui::InputFloat3("Position", camera_position);
             ImGui::InputFloat3("Look At", camera_lookat);
             ImGui::InputFloat3("Up", camera_vup);

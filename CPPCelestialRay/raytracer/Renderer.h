@@ -118,7 +118,8 @@ public:
 	void RenderSingleProcessing();
 	Color RayColor(const Ray& r, const Hittable& world, size_t depth);
 	void SaveRenderBuffer(const std::string outputImagePath) const;
-	
+	void SetOverrideCamera(const Camera& camera);
+	void RemoveOverrideCamera();
 
 private:
 	std::unique_ptr<ThreadPool> render_thread_pool;
