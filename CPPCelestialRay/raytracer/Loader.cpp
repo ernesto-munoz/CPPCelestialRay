@@ -23,13 +23,16 @@ void Loader::ProcessMesh(aiMesh* mesh, const aiScene* scene, std::vector<std::sh
 {
     std::shared_ptr<Mesh> output_mesh = std::make_shared<Mesh>();
 
+    const aiMatrix4x4& transform = scene->mRootNode->FindNode(mesh->mName)->mTransformation;
     // Process vertices
     for (unsigned int i = 0; i < mesh->mNumVertices; ++i) {
         //std::cout << mesh->mVertices[i].x << " " << mesh->mVertices[i].y << " " << mesh->mVertices[i].z << std::endl;
-        output_mesh->vertices.emplace_back(glm::vec3(mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z));
+        aiVector3D vertex = transform * mesh->mVertices[i];
+        output_mesh->vertices.emplace_back(glm::vec3(vertex.x, vertex.y, vertex.z));
 
         if (mesh->HasNormals()) {
-            output_mesh->normals.emplace_back(glm::vec3(mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z));
+            aiVector3D normal = transform * mesh->mNormals[i];
+            output_mesh->normals.emplace_back(glm::vec3(normal.x, normal.y, normal.z));
             //vertex.Normal = glm::vec3(mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z);
         }
         else {} // do something if the model doesn't have normals
@@ -66,21 +69,60 @@ void Loader::ProcessMesh(aiMesh* mesh, const aiScene* scene, std::vector<std::sh
     std::cout << "Mesh: " << output_mesh->vertices.size() << " vertices, " << output_mesh->faces.size() << " faces." << std::endl;
 }
 
-std::vector<std::shared_ptr<Mesh>> Loader::Load(std::string filename)
+const aiScene* Loader::OpenFile(const std::string& filename)
 {
-    std::vector<std::shared_ptr<Mesh>> meshes;
-
     Assimp::Importer importer;
-    const aiScene* scene = importer.ReadFile(filename.c_str(), aiProcess_Triangulate | aiProcess_GenSmoothNormals);
+    const aiScene* scene = importer.ReadFile(filename.c_str(), aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs);
 
     // return zero meshes if the file read filed
-    if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
+  /*  if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
         std::cerr << "ERROR::ASSIMP::" << importer.GetErrorString() << std::endl;
-        return meshes;
+        throw std::runtime_error(std::format("ASSIMP::ERROR::ReadFile returned an invalid scene ({})", filename));
+    }*/
+    return scene;
+}
+
+void Loader::GetCameras(const std::string& filename, std::vector<Camera>& cameras)
+{
+    /*const aiScene* scene = OpenFile(filename);*/
+    // TODO: move this to a unique function
+    Assimp::Importer importer;
+    const aiScene* scene = importer.ReadFile(filename.c_str(), aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs);
+
+    for (unsigned int i = 0; i < scene->mNumCameras; ++i) {
+        const aiCamera* camera = scene->mCameras[i];
+        Camera final_camera = FromAssimpCamera(*camera, *scene);
+        cameras.emplace_back(final_camera);
     }
+
+}
+
+Camera Loader::FromAssimpCamera(const aiCamera& camera, const aiScene& scene)
+{
+    // the node with the same name that the camera must exists, should i check it?
+    const aiMatrix4x4& transform = scene.mRootNode->FindNode(camera.mName)->mTransformation;
+    aiVector3D position = transform * camera.mPosition;
+    aiVector3D lookat = transform * camera.mLookAt;
+    aiVector3D up = camera.mUp;  // TODO: this up is not being transformed
+    float vfov = glm::degrees(camera.mHorizontalFOV / camera.mAspect);
+
+    Camera final_camera;
+    final_camera.name = std::string(camera.mName.C_Str());
+    final_camera.center = glm::vec3(position.x, position.y, position.z);
+    final_camera.lookat = glm::vec3(lookat.x, lookat.y, lookat.z);
+    final_camera.vup = glm::normalize(glm::vec3(up.x, up.y, up.z));
+    final_camera.vfov = vfov;
+
+    return final_camera;
+}
+
+void Loader::GetMeshes(const std::string& filename, std::vector<std::shared_ptr<Mesh>>& meshes)
+{
+
+    // TODO: move this to a unique function
+    Assimp::Importer importer;
+    const aiScene* scene = importer.ReadFile(filename.c_str(), aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs);
 
     aiNode* root_node = scene->mRootNode;
     Loader::ProcessNode(root_node, scene, meshes);
-
-    return meshes;
 }

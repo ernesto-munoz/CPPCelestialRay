@@ -201,7 +201,7 @@ inline std::shared_ptr<Hittable> box(const glm::vec3& a, const glm::vec3& b, std
 const Scene AssimpCubeLoader()
 {
 	Scene scene;
-	scene.AddCamera(Camera(glm::vec3(0, 2, 5), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0), 20, 0, 10));
+	//scene.AddCamera(Camera(glm::vec3(0, 2, 5), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0), 20, 0, 10));
 	
 	// Materials
 	auto material_ground = std::make_shared<Lambert>(glm::vec3(0.8, 0.8, 0.0));
@@ -213,27 +213,15 @@ const Scene AssimpCubeLoader()
 	auto material_left = std::make_shared<Dielectric>(glm::vec3(1.0, 1.0, 1.0), 1.50);
 	auto material_bubble = std::make_shared<Dielectric>(glm::vec3(1.0, 1.0, 1.0), 1.00 / 1.50);
 
-	//world.Add(make_shared<Sphere>(glm::vec3(0.0, -100.5, -1.0), 100.0, material_ground));
-	scene.world.Add(make_shared<Sphere>(glm::vec3(0.0, 0.0, -1.2), 0.5, material_center));
-	scene.world.Add(make_shared<Sphere>(glm::vec3(-1.0, 0.0, -1.0), 0.5, material_left));
-	scene.world.Add(make_shared<Sphere>(glm::vec3(-1.0, 0.0, -1.0), 0.4, material_bubble));
-	scene.world.Add(make_shared<Sphere>(glm::vec3(1.0, 0.0, -1.0), 0.5, material_right));
+	std::vector<std::shared_ptr<Mesh>> meshes;
+	Loader::GetMeshes("../resources/monkey.glb", meshes);
 
-	scene.world.Add(make_shared<Sphere>(glm::vec3(-1.0, 0, -1.0), 0.1, material_center));
-	scene.world.Add(make_shared<Sphere>(glm::vec3(1.0, 0.0, 1.0), 0.1, material_center));
-	scene.world.Add(make_shared<Sphere>(glm::vec3(-0.5, 0.0, 0.5), 0.1, red));
-
-	scene.world.Add(make_shared<Sphere>(glm::vec3(-1.0, 0, -1.0), 0.1, red));
-	scene.world.Add(make_shared<Sphere>(glm::vec3(1.0, 0.0, -1.0), 0.1, green));
-	scene.world.Add(make_shared<Sphere>(glm::vec3(1.0, 0, 1.0), 0.1, blue));
-	scene.world.Add(make_shared<Sphere>(glm::vec3(-1.0, 0, 1.0), 0.1, material_center));
-
-	auto meshes = Loader::Load("../resources/sphere_scatter.gltf");
-	
 	for (auto mesh : meshes) {
 		mesh->SetMaterial(material_center);
 		scene.world.Add(mesh);
 	}
+
+	scene.FillFromFilePath("../resources/monkey.glb");
 	
 	return scene;
 }

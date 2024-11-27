@@ -77,7 +77,7 @@ void RendererUI::NewFrame() {
         ImGui::InputInt(std::format("Camera({})", num_cameras).c_str(), &selected_camera_index);
         selected_camera_index = std::clamp(selected_camera_index, 0, static_cast<int>(num_cameras) - 1);
 
-        // Load alreqady stablished scenes
+        // Load already stablished scenes
         if (ImGui::CollapsingHeader("Preset Scenes", ImGuiTreeNodeFlags_None)) {
             if (ImGui::Button("Set")) {           
                 SetCurrentScene();

@@ -3,7 +3,7 @@
 void Scene::Accelerate()
 {
 	if (!has_been_accelerated) {
-		world = HittablesList(std::make_shared<BVHNode>(world));
+		//world = HittablesList(std::make_shared<BVHNode>(world));
 		has_been_accelerated = true;
 	}
 }
@@ -48,11 +48,9 @@ void Scene::PrepareForRender(Resolution res)
 		override_camera.value().SetCameraResolution(res);
 		override_camera.value().Initialize();
 	}
-
-	
-
 }
 
 void Scene::FillFromFilePath(const std::string& file_path)
 {
+	Loader::GetCameras(file_path, cameras);
 }

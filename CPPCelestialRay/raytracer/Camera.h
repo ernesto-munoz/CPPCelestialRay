@@ -1,5 +1,6 @@
 #pragma once
 #include <iostream>
+#include <string>
 #include <format>
 #include "hittable/HittablesList.h"
 #include "Resolution.h"
@@ -9,6 +10,7 @@
 class Camera
 {
 public:
+	std::string name = "Camera";
 	double aspect_ratio = 1.0;  // Ratio of image width over height
 	int image_width = 100;
 	int image_height = 100;
@@ -16,12 +18,12 @@ public:
 	float vfov = 80.0f;
 	glm::vec3 lookat = glm::vec3(0.0f, 0.0f, -1.0f);
 	glm::vec3 vup = glm::vec3(0.0f, 1.0f, 0.0f);
-	float defocus_angle = 0.6f;
+	float defocus_angle = 0.2f;
 	float focus_distance = 10.0f;
 
 	Camera() : center(glm::vec3()) {};
 	explicit Camera(glm::vec3& center) : center(center) {}
-	Camera(const glm::vec3& center, const glm::vec3& lookAt, const glm::vec3& vup, float vfov, float defocus_angle, float focus_distance) : 
+	Camera(const glm::vec3& center, const glm::vec3& lookAt, const glm::vec3& vup, float vfov, float defocus_angle, float focus_distance) :
 		center(center), lookat(lookAt), vup(vup), vfov(vfov), defocus_angle(defocus_angle), focus_distance(focus_distance) {}
 	
 	void Initialize();

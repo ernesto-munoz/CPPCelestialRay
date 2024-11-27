@@ -5,6 +5,7 @@
 #include "hittable/HittablesList.h"
 #include "Camera.h"
 #include "accel/BVHNode.h"
+#include "Loader.h"
 
 class Scene
 {

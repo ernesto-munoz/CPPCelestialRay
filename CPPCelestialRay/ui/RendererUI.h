@@ -67,7 +67,7 @@ public:
     // Test Scenes
     const std::vector < TestScenes::kTestScenes> all_test_scene = TestScenes::GetAllTestScenes();
     std::vector<const char*> all_test_scenes_nice_name;
-    int selected_test_scene = 0;
+    int selected_test_scene = 7;
 
     // Resources loader
     char resources_scene_filepath[MAX_PATH];

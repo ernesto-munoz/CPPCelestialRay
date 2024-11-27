@@ -63,6 +63,7 @@ Renderer::Status Renderer::Render() {
 	// Print renderer condiguration
 	std::cout << threading_config << std::endl;
 	std::cout << render_config << std::endl;
+	std::cout << scene.GetCurrentCamera() << std::endl;
 
 	// Launch render in multithread or not
 	if (!threading_config.use_multithread) { RenderSingleProcessing(); }
@@ -116,7 +117,6 @@ void Renderer::RenderPatch(unsigned int x, unsigned int y, unsigned int width, u
 	for (unsigned int j = y_min; j < y_max; ++j) {
 		for (unsigned int i = x_min; i < x_max; ++i) {
 			pixels.emplace_back(std::make_tuple(i, j));
-			
 		}
 	}
 
